@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -21,4 +22,56 @@ model Event {
   price       Float
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  Spot        Spot[]
+}
+
+model Spot {
+  id        String     @id @default(uuid())
+  name      String
+  status    SpotStatus
+  eventId   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  Event             Event               @relation(fields: [eventId], references: [id])
+  Ticket            Ticket[]
+  ReservationHitory ReservationHitory[]
+}
+
+enum SpotStatus {
+  available
+  reserved
+}
+
+model Ticket {
+  id         String     @id @default(uuid())
+  email      String
+  ticketKind TicketKind
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  spotId     String
+  Spot       Spot       @relation(fields: [spotId], references: [id])
+
+  @@unique([spotId])
+}
+
+model ReservationHitory {
+  id         String       @id @default(uuid())
+  email      String
+  ticketKind TicketKind
+  status     TicketStatus
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  spotId     String
+  Spot       Spot         @relation(fields: [spotId], references: [id])
+}
+
+enum TicketKind {
+  full
+  half
+}
+
+enum TicketStatus {
+  reserved
+  canceled
 }
